@@ -22,8 +22,13 @@ import plotly.graph_objs as go
 import pandas as pd
 import plotly.offline as pyo
 
-tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
-model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+@st.cache(allow_output_mutation=True)
+def get_model():
+    tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
+    model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+    return tokenizer,model
+
+tokenizer,model = get_model()
 
 def extract_text_from_pdf(path):
   text=''
