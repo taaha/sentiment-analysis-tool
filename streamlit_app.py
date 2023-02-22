@@ -66,13 +66,13 @@ if uploaded_file is not None:
         else:
             useful_sentence.append(i)
 
-    print('starting sentiment analysis')
+    st.write("sentiment analysis started")
     classifier = pipeline(model="ProsusAI/finbert") 
     output = classifier(useful_sentence)
 
     df = pd.DataFrame.from_dict(output)
     df['Sentence']= pd.Series(useful_sentence)
-    print('sentiment analysis done')
+    st.write("sentiment analysis done")
 
 
 
@@ -143,6 +143,20 @@ if uploaded_file is not None:
     fig.update_layout(height=700, showlegend=False, title={'text': "Sentiment Analysis", 'x': 0.5, 'xanchor': 'center'})
 
     pyo.plot(fig, filename='my_subplots.html')
+
+    # Create a button to download the HTML file
+    def download_html():
+        # Get the HTML content
+        with open("my_subplots.html", "r") as f:
+            html = f.read()
+        # Set the file name and content type
+        file_name = "my_subplots.html"
+        mime_type = "text/html"
+        # Use st.download_button() to create a download button
+        st.download_button(label="Download HTML file", data=html, file_name=file_name, mime=mime_type)
+
+    # Call the download_html() function to create the download button
+    download_html()
 
 
 
