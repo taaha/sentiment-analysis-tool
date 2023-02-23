@@ -91,13 +91,14 @@ if uploaded_file is not None:
                 else:
                     useful_sentence.append(i)
 
-            st.write("sentiment analysis started")
-            classifier = pipeline(model="ProsusAI/finbert") 
-            output = classifier(useful_sentence)
+            with st.spinner('Processing please wait...'):
+                #st.write("Sentiment analysis started")
+                classifier = pipeline(model="ProsusAI/finbert") 
+                output = classifier(useful_sentence)
 
-            df = pd.DataFrame.from_dict(output)
-            df['Sentence']= pd.Series(useful_sentence)
-            st.write("sentiment analysis done")
+                df = pd.DataFrame.from_dict(output)
+                df['Sentence']= pd.Series(useful_sentence)
+                #st.write("Sentiment analysis done")
 
             labels = ['neutral', 'positive', 'negative']
             values = df.label.value_counts().to_list()
@@ -172,11 +173,11 @@ if uploaded_file is not None:
             ), row=1, col=5)
 
             if abs((pos_df_mean - neg_df_mean)) < -0.29:
-                fig.update_traces(title_text="Overall Sentiment Negative", selector=dict(type='indicator'), row=1, col=5)
+                fig.update_traces(title_text="Cummulative Sentiment Negative", selector=dict(type='indicator'), row=1, col=5)
             elif abs((pos_df_mean - neg_df_mean)) < 0.29:
-                fig.update_traces(title_text="Overall Sentiment Neutral", selector=dict(type='indicator'), row=1, col=5)
+                fig.update_traces(title_text="Cummulative Sentiment Neutral", selector=dict(type='indicator'), row=1, col=5)
             else:
-                fig.update_traces(title_text="Overall Sentiment Positive", selector=dict(type='indicator'), row=1, col=5)
+                fig.update_traces(title_text="Cummulative Sentiment Positive", selector=dict(type='indicator'), row=1, col=5)
 
 
 
@@ -208,19 +209,21 @@ if uploaded_file is not None:
 
             fig.update_layout(height=700, showlegend=False, title={'text': "Sentiment Analysis Report", 'x': 0.5, 'xanchor': 'center','font': {'size': 32}})
 
-            pyo.plot(fig, filename='my_subplots.html')
+            pyo.plot(fig, filename='report.html')
 
             # Create a button to download the HTML file
             def download_html():
-                # Get the HTML content
-                with open("my_subplots.html", "r") as f:
-                    html = f.read()
-                # Set the file name and content type
-                file_name = "my_subplots.html"
-                mime_type = "text/html"
-                # Use st.download_button() to create a download button
-                st.download_button(label="Download HTML file", data=html, file_name=file_name, mime=mime_type)
-                st.stop()
+                with st.spinner('Downloading HTML file...'):
+                    # Get the HTML content
+                    with open("report.html", "r") as f:
+                        html = f.read()
+                    f.close()
+                    # Set the file name and content type
+                    file_name = "report.html"
+                    mime_type = "text/html"
+                    # Use st.download_button() to create a download button
+                    st.download_button(label="Download Report", data=html, file_name=file_name, mime=mime_type)
+                    st.stop()
 
             # Call the download_html() function to create the download button
             download_html()
