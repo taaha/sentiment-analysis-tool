@@ -55,9 +55,11 @@ if uploaded_file is not None:
     pdf_reader = PyPDF2.PdfReader(uploaded_file)
     # Get the number of pages in the PDF file
     num_pages = len(pdf_reader.pages)
-
+    
+    if num_pages > 20:
+        st.error("Pages in PDF file should be less than 20.")
     # Check that only one file was uploaded
-    if isinstance(uploaded_file, list):
+    elif isinstance(uploaded_file, list):
         st.error("Please upload only one PDF file at a time.")
     else:
         #uploaded_file = uploaded_file[0]
@@ -178,9 +180,6 @@ if uploaded_file is not None:
                 fig.update_traces(title_text="Cummulative Sentiment Neutral", selector=dict(type='indicator'), row=1, col=5)
             else:
                 fig.update_traces(title_text="Cummulative Sentiment Positive", selector=dict(type='indicator'), row=1, col=5)
-
-
-
 
             fig.add_trace(go.Image(z=image), row=3, col=1)
             fig.update_xaxes(visible=False, row=3, col=1)
