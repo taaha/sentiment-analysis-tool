@@ -9,10 +9,6 @@ from PyPDF2 import PdfReader
 from os import walk
 import nltk
 import glob
-nltk.download('punkt')
-from nltk.tokenize import sent_tokenize
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from transformers import pipeline
 
 import plotly.express as px
 from wordcloud import WordCloud
@@ -22,7 +18,16 @@ import plotly.graph_objs as go
 import pandas as pd
 import plotly.offline as pyo
 
-@st.cache(allow_output_mutation=True)
+@st.cache_resource()
+def get_nl():
+    return nltk.download('punkt')
+get_nl()
+
+from nltk.tokenize import sent_tokenize
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import pipeline
+
+@st.cache_resource()#allow_output_mutation=True)
 def get_model():
     tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
     model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
