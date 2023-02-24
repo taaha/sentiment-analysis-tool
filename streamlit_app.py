@@ -133,6 +133,11 @@ if uploaded_file is not None:
             #neu_df_mean = neu_df.score.mean()
             neu_df['score'] = neu_df['score'].round(4)
             neu_df.rename(columns = {'Sentence':'Neutral Sentences'}, inplace = True)
+            
+            df_temp = neg_df
+            df_temp = df_temp['score'] * -1
+            df_temp = pd.concat([df_temp, pos_df])
+
 
             fig = make_subplots(
                 rows=8, cols=6,
@@ -160,7 +165,7 @@ if uploaded_file is not None:
 
             fig.add_trace(go.Indicator(
                 mode = "gauge+number",
-                value = abs((pos_df_mean - neg_df_mean)),
+                value = df_temp.score.mean(),
                 domain = {'x': [0, 1], 'y': [0, 1]},
                 title = {'text': "Average of Score", 'font': {'size': 16}},
                 gauge = {
@@ -179,9 +184,9 @@ if uploaded_file is not None:
                 }
             ), row=1, col=5)
 
-            if abs((pos_df_mean - neg_df_mean)) < -0.29:
+            if df_temp.score.mean() < -0.29:
                 fig.update_traces(title_text="Cummulative Sentiment Negative", selector=dict(type='indicator'), row=1, col=5)
-            elif abs((pos_df_mean - neg_df_mean)) < 0.29:
+            elif df_temp.score.mean() < 0.29:
                 fig.update_traces(title_text="Cummulative Sentiment Neutral", selector=dict(type='indicator'), row=1, col=5)
             else:
                 fig.update_traces(title_text="Cummulative Sentiment Positive", selector=dict(type='indicator'), row=1, col=5)
