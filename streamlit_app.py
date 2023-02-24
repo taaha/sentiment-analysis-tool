@@ -86,12 +86,17 @@ if uploaded_file is not None:
             text = text.replace("\n", " " )
             sentences = sent_tokenize(text)
             long_sentence=[]
+            small_sentence=[]
             useful_sentence=[]
             for i in sentences:
                 if len(i) > 510:
                     long_sentence.append(i)
+                elif len(i) < 50:
+                    small_sentence.append(i)
                 else:
                     useful_sentence.append(i)
+            
+#            print(small_sentence)
 
             with st.spinner('Processing please wait...'):
                 #st.write("Sentiment analysis started")
