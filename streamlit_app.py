@@ -27,8 +27,8 @@ from nltk.tokenize import sent_tokenize
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import pipeline
 
-if os.path.exists("report.html"):
-    os.remove("report.html")
+# if os.path.exists("report.html"):
+#     os.remove("report.html")
 
 
 @st.cache_resource()
@@ -264,6 +264,21 @@ if uploaded_file is not None:
             fig.update_layout(height=700, showlegend=False, title={'text': "Sentiment Analysis Report", 'x': 0.5, 'xanchor': 'center','font': {'size': 32}})
 
             pyo.plot(fig, filename='report.html')
+
+            import base64
+
+            # Convert the figure to HTML format
+            fig_html = pio.to_html(fig, full_html=False)
+            b64 = base64.b64encode(fig_html.encode()).decode()
+
+            # Generate a download link
+            filename = "figure.html"
+            href = f'<a href="data:file/html;base64,{b64}" download="{filename}">Download Plotly figure</a>'
+
+            # Display the link
+            st.markdown(href, unsafe_allow_html=True)
+
+
             #fig.write_html("report.html")
             #report_generated=True
 
