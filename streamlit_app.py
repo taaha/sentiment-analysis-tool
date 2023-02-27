@@ -27,6 +27,10 @@ from nltk.tokenize import sent_tokenize
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import pipeline
 
+if os.path.exists("report.html"):
+    os.remove("report.html")
+
+
 @st.cache_resource()
 def get_model():
     tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
@@ -45,13 +49,27 @@ def extract_text_from_pdf(path):
     text = text + page.extract_text()
   return text
 
+# Create a button to download the HTML file
+def download_html():
+    with st.spinner('Downloading HTML file...'):
+        # Get the HTML content
+        with open('report.html', "r") as f:
+            html = f.read()
+        f.close()
+        # Set the file name and content type
+        file_name = "report.html"
+        mime_type = "text/html"
+        # Use st.download_button() to create a download button
+        print('download button')
+        st.download_button(label="Download Report", data=html, file_name=file_name, mime=mime_type)
+        st.stop()
+
 st.write("""
 # Sentiment Analysis Tool
 """)
 #uploaded_file = st.file_uploader("Choose a PDF file")
 uploaded_file = st.file_uploader("Choose a PDF file", accept_multiple_files=False, type=['pdf'])
 if uploaded_file is not None:
-
     pdf_reader = PyPDF2.PdfReader(uploaded_file)
     # Get the number of pages in the PDF file
     num_pages = len(pdf_reader.pages)
@@ -100,6 +118,33 @@ if uploaded_file is not None:
 
             with st.spinner('Processing please wait...'):
                 #st.write("Sentiment analysis started")
+
+                pipe = pipeline(model="ProsusAI/finbert") 
+
+                # import torch
+                # from torch.utils.data import Dataset, DataLoader
+                # sentences=useful_sentence
+                # class SentenceDataset(Dataset):
+                #     def __init__(self, sentences):
+                #         self.sentences = sentences
+
+                #     def __len__(self):
+                #         return len(self.sentences)
+
+                #     def __getitem__(self, idx):
+                #         return self.sentences[idx]
+
+                # dataset = SentenceDataset(sentences)
+                # #from tqdm import tqdm
+                # combined_dict = {}
+                # for batch_size in [8]:
+                #     print(f"Streaming batch_size={batch_size}")
+                #     for out in pipe(dataset, batch_size=batch_size):
+                #         if isinstance(out, dict):
+                #             combined_dict.update(out)
+
+                
+                #output=combined_dict        
                 classifier = pipeline(model="ProsusAI/finbert") 
                 output = classifier(useful_sentence)
 
@@ -219,20 +264,13 @@ if uploaded_file is not None:
             fig.update_layout(height=700, showlegend=False, title={'text': "Sentiment Analysis Report", 'x': 0.5, 'xanchor': 'center','font': {'size': 32}})
 
             pyo.plot(fig, filename='report.html')
-
-            # Create a button to download the HTML file
-            def download_html():
-                with st.spinner('Downloading HTML file...'):
-                    # Get the HTML content
-                    with open("report.html", "r") as f:
-                        html = f.read()
-                    f.close()
-                    # Set the file name and content type
-                    file_name = "report.html"
-                    mime_type = "text/html"
-                    # Use st.download_button() to create a download button
-                    st.download_button(label="Download Report", data=html, file_name=file_name, mime=mime_type)
-                    st.stop()
+            #fig.write_html("report.html")
+            #report_generated=True
 
             # Call the download_html() function to create the download button
-            download_html()
+            #download_html()
+
+# if report_generated==True:
+#     # Display the report
+#     download_html()
+            
