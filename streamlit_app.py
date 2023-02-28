@@ -68,28 +68,36 @@ st.write("""
 # Sentiment Analysis Tool
 """)
 #uploaded_file = st.file_uploader("Choose a PDF file")
-uploaded_file = st.file_uploader("Choose a PDF file", accept_multiple_files=False, type=['pdf'])
-if uploaded_file is not None:
-    pdf_reader = PyPDF2.PdfReader(uploaded_file)
+#uploaded_file = st.file_uploader("Choose a PDF file", accept_multiple_files=False, type=['pdf'])
+uploaded_file = st.file_uploader("Choose a PDF file", accept_multiple_files=True, type=['pdf'])
+#if uploaded_file is not None:
+if len(uploaded_file)>0:
+    import time
+
+    # Wait for 5 seconds
+    time.sleep(5)
+    #print('gone')
+    pdf_reader = PyPDF2.PdfReader(uploaded_file[0])
     # Get the number of pages in the PDF file
     num_pages = len(pdf_reader.pages)
     
     if num_pages > 20:
         st.error("Pages in PDF file should be less than 20.")
     # Check that only one file was uploaded
-    elif isinstance(uploaded_file, list):
+    #elif isinstance(uploaded_file, list):
+    elif len(uploaded_file) > 1:
         st.error("Please upload only one PDF file at a time.")
     else:
         #uploaded_file = uploaded_file[0]
         # Check that the file is a PDF
-        if uploaded_file.type != 'application/pdf':
+        if uploaded_file[0].type != 'application/pdf':
             st.error("Please upload a PDF file.")
         else:
 
             ############################ 1. Extract text from PDF ############################
             text=''
             # return text from pdf
-            pdf_reader = PyPDF2.PdfReader(uploaded_file)
+            pdf_reader = PyPDF2.PdfReader(uploaded_file[0])
             # Get the number of pages in the PDF file
             num_pages = len(pdf_reader.pages)
             # Display the number of pages in the PDF file
@@ -103,6 +111,7 @@ if uploaded_file is not None:
             ############################ 2. Sentiment Analysis ############################
             text = text.replace("\n", " " )
             sentences = sent_tokenize(text)
+            title = sentences[0]
             long_sentence=[]
             small_sentence=[]
             useful_sentence=[]
@@ -114,47 +123,27 @@ if uploaded_file is not None:
                 else:
                     useful_sentence.append(i)
             
-#            print(small_sentence)
+            del sentences
 
             with st.spinner('Processing please wait...'):
-                #st.write("Sentiment analysis started")
 
                 pipe = pipeline(model="ProsusAI/finbert") 
 
-                # import torch
-                # from torch.utils.data import Dataset, DataLoader
-                # sentences=useful_sentence
-                # class SentenceDataset(Dataset):
-                #     def __init__(self, sentences):
-                #         self.sentences = sentences
-
-                #     def __len__(self):
-                #         return len(self.sentences)
-
-                #     def __getitem__(self, idx):
-                #         return self.sentences[idx]
-
-                # dataset = SentenceDataset(sentences)
-                # #from tqdm import tqdm
-                # combined_dict = {}
-                # for batch_size in [8]:
-                #     print(f"Streaming batch_size={batch_size}")
-                #     for out in pipe(dataset, batch_size=batch_size):
-                #         if isinstance(out, dict):
-                #             combined_dict.update(out)
-
-                
-                #output=combined_dict        
                 classifier = pipeline(model="ProsusAI/finbert") 
                 output = classifier(useful_sentence)
 
                 df = pd.DataFrame.from_dict(output)
                 df['Sentence']= pd.Series(useful_sentence)
-                #st.write("Sentiment analysis done")
 
             labels = ['neutral', 'positive', 'negative']
             values = df.label.value_counts().to_list()
 
+            # removing words
+            words_to_remove = ["s", "quarter", "thank", "million", "Thank", "quetion", 'wa', 'rate', 'firt',
+                               "customer", "business", "last year", "year", 'lat', 'well', 'jut', 'thi', 'cutomer',
+                               "will", "think", "higher", "question", "going"]
+            for word in words_to_remove:
+                text = text.replace(word, "")
             wordcloud = WordCloud(background_color='white', width=800, height=400).generate(text)
             image = wordcloud.to_image()
 
@@ -185,14 +174,32 @@ if uploaded_file is not None:
 
 
             fig = make_subplots(
-                rows=8, cols=6,
-                specs=[[{"type": "pie", "rowspan": 2, "colspan": 2}, None, {"type": "indicator", "rowspan": 2, "colspan": 2}, None, {"type": "indicator", "rowspan": 2, "colspan": 2}, None],
+                rows=26, cols=6,
+                specs=[ [None, None, None, None, None, None],
                         [None, None, None, None, None, None],
-                        [{"type": "image", "rowspan": 6, "colspan": 3}, None, None, {"type": "table", "rowspan": 2, "colspan": 3}, None, None],
                         [None, None, None, None, None, None],
-                        [None, None, None, {"type": "table", "rowspan": 2, "colspan": 3}, None, None],
                         [None, None, None, None, None, None],
-                        [None, None, None, {"type": "table", "rowspan": 2, "colspan": 3}, None, None],
+                        [None, None, None, None, None, None],
+                        [{"type": "pie", "rowspan": 6, "colspan": 2}, None, {"type": "indicator", "rowspan": 6, "colspan": 2}, None, {"type": "indicator", "rowspan": 6, "colspan": 2}, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [{"type": "image", "rowspan": 15, "colspan": 3}, None, None, {"type": "table", "rowspan": 5, "colspan": 3}, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, {"type": "table", "rowspan": 5, "colspan": 3}, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, {"type": "table", "rowspan": 5, "colspan": 3}, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
+                        [None, None, None, None, None, None],
                         [None, None, None, None, None, None],
                     ],
             )
@@ -201,12 +208,12 @@ if uploaded_file is not None:
                         title = 'Count by label', 
                         marker=dict(colors=colors,
                         line=dict(width=2, color='white'))),
-                        row=1, col=1)
+                        row=6, col=1)
 
             fig.add_trace(go.Indicator(
                 mode = "number",
                 value = len(df.label.values.tolist()),
-                title = {"text": "Count of Sentence"}), row=1, col=3)
+                title = {"text": "Count of Sentence"}), row=6, col=3)
 
             fig.add_trace(go.Indicator(
                 mode = "gauge+number",
@@ -227,41 +234,47 @@ if uploaded_file is not None:
                         'value': abs((pos_df_mean - neg_df_mean))
                     }
                 }
-            ), row=1, col=5)
+            ), row=6, col=5)
 
             if df_temp.score.mean() < -0.29:
-                fig.update_traces(title_text="Cummulative Sentiment Negative", selector=dict(type='indicator'), row=1, col=5)
+                fig.update_traces(title_text="Cummulative Sentiment Negative", selector=dict(type='indicator'), row=6, col=5)
             elif df_temp.score.mean() < 0.29:
-                fig.update_traces(title_text="Cummulative Sentiment Neutral", selector=dict(type='indicator'), row=1, col=5)
+                fig.update_traces(title_text="Cummulative Sentiment Neutral", selector=dict(type='indicator'), row=6, col=5)
             else:
-                fig.update_traces(title_text="Cummulative Sentiment Positive", selector=dict(type='indicator'), row=1, col=5)
+                fig.update_traces(title_text="Cummulative Sentiment Positive", selector=dict(type='indicator'), row=6, col=5)
 
-            fig.add_trace(go.Image(z=image), row=3, col=1)
-            fig.update_xaxes(visible=False, row=3, col=1)
-            fig.update_yaxes(visible=False, row=3, col=1)
+            fig.add_trace(go.Image(z=image), row=12, col=1)
+            fig.update_xaxes(visible=False, row=12, col=1)
+            fig.update_yaxes(visible=False, row=12, col=1)
 
             table_trace1 = go.Table(
                 header=dict(values=list(pos_df.columns), fill_color='lightgray', align='left'),
                 cells=dict(values=[pos_df[name] for name in pos_df.columns], fill_color='white', align='left'),
                 columnwidth=[1, 4]
             )
-            fig.add_trace(table_trace1, row=3, col=4)
+            fig.add_trace(table_trace1, row=12, col=4)
 
             table_trace2 = go.Table(
                 header=dict(values=list(neg_df.columns), fill_color='lightgray', align='left'),
                 cells=dict(values=[neg_df[name] for name in neg_df.columns], fill_color='white', align='left'),
                 columnwidth=[1, 4]
             )
-            fig.add_trace(table_trace2, row=5, col=4)
+            fig.add_trace(table_trace2, row=17, col=4)
 
             table_trace2 = go.Table(
                 header=dict(values=list(neu_df.columns), fill_color='lightgray', align='left'),
                 cells=dict(values=[neu_df[name] for name in neu_df.columns], fill_color='white', align='left'),
                 columnwidth=[1, 4]
             )
-            fig.add_trace(table_trace2, row=7, col=4)
+            fig.add_trace(table_trace2, row=22, col=4)
 
-            fig.update_layout(height=700, showlegend=False, title={'text': "Sentiment Analysis Report", 'x': 0.5, 'xanchor': 'center','font': {'size': 32}})
+            import textwrap
+            wrapped_title = "\n".join(textwrap.wrap(title, width=50))
+
+            # Add HTML tags to force line breaks in the title text
+            wrapped_title = "<br>".join(wrapped_title.split("\n"))
+
+            fig.update_layout(height=700, showlegend=False, title={'text': f"<b>{wrapped_title} - Sentiment Analysis Report</b>", 'x': 0.5, 'xanchor': 'center','font': {'size': 32}})
 
             pyo.plot(fig, filename='report.html')
 
@@ -273,19 +286,7 @@ if uploaded_file is not None:
 
             # Generate a download link
             filename = "figure.html"
-            href = f'<a href="data:file/html;base64,{b64}" download="{filename}">Download Plotly figure</a>'
+            href = f'<a href="data:file/html;base64,{b64}" download="{filename}">Download Report</a>'
 
             # Display the link
             st.markdown(href, unsafe_allow_html=True)
-
-
-            #fig.write_html("report.html")
-            #report_generated=True
-
-            # Call the download_html() function to create the download button
-            #download_html()
-
-# if report_generated==True:
-#     # Display the report
-#     download_html()
-            
